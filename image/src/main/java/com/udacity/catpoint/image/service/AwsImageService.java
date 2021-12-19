@@ -1,5 +1,6 @@
 package com.udacity.catpoint.image.service;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -41,6 +42,7 @@ public class AwsImageService implements ImageService{
     private static RekognitionClient rekognitionClient;
 
     public AwsImageService() {
+
         Properties props = new Properties();
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             props.load(is);
@@ -78,12 +80,13 @@ public class AwsImageService implements ImageService{
         DetectLabelsRequest detectLabelsRequest = DetectLabelsRequest.builder().image(awsImage).minConfidence(confidenceThreshhold).build();
         DetectLabelsResponse response = rekognitionClient.detectLabels(detectLabelsRequest);
         logLabelsForFun(response);
-        return response.labels().stream().filter(l -> l.name().toLowerCase().contains("cat")).findFirst().isPresent();
+        return response.labels().stream().anyMatch(l -> l.name().equalsIgnoreCase("cat"));
     }
 
     private void logLabelsForFun(DetectLabelsResponse response) {
         log.info(response.labels().stream()
                 .map(label -> String.format("%s(%.1f%%)", label.name(), label.confidence()))
                 .collect(Collectors.joining(", ")));
+//        System.out.println(response.labels());
     }
 }
